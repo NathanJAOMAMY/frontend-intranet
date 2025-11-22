@@ -82,103 +82,112 @@ const useFilesManager = () => {
     }
   };
 
-  // Crée récursivement les dossiers pour un chemin relatif
-  const ensureFolderPath = async (
-    relativePath: string,
-    parentId: string | "/"
-  ): Promise<string> => {
-    const parts = relativePath.split("/");
-    parts.pop();
-    let currentParentId = parentId;
+// 🧩 Cache global pour les dossiers déjà créés
+const folderCache: Record<string, string> = {};
 
-    for (const folderName of parts) {
-      let existing = folders.find((f) => f.name === folderName);
-      console.log(folders);
-      if (existing) {
-        currentParentId = existing.id;
-      } else {
-        const newFolder: Folder = {
-          id: uuid(),
-          name: folderName,
-          parentFolderId: currentParentId,
-          userId: currentUser.idUser,
-          userIdAcces: [],
-        };
-        await axios.post(`${API_BASE_URL}/folder`, newFolder);
-        currentParentId = newFolder.id;
-        setFolders((prev) => [...prev, newFolder]); // met à jour la liste locale
-      }
+// 🔹 Crée récursivement les dossiers pour un chemin relatif
+const ensureFolderPath = async (
+  relativePath: string,
+  parentId: string | "/"
+): Promise<string> => {
+  const parts = relativePath.split("/").filter(Boolean);
+  let currentParentId = parentId;
+  let currentPath = "";
+
+  for (const folderName of parts) {
+    currentPath = currentPath ? `${currentPath}/${folderName}` : folderName;
+
+    // 🔍 Vérifie si ce chemin a déjà été créé (A, A/B, etc.)
+    if (folderCache[currentPath]) {
+      currentParentId = folderCache[currentPath];
+      continue;
     }
 
-    return currentParentId;
-  };
-  const handleUploadFile = async (files: FileList) => {
-    setLoadingFile(true);
+    // 🔍 Vérifie si le dossier existe déjà localement
+    let existing = folders.find(
+      (f) => f.name === folderName && f.parentFolderId === currentParentId
+    );
 
-    try {
-      // Vérification : est-ce qu'il existe au moins un fichier avec extension ?
-      const hasExtension = Array.from(files).some((file) => {
-        return file.name.includes(".") && !!file.name.split(".").pop();
-      });
+    if (existing) {
+      currentParentId = existing.id;
+      folderCache[currentPath] = existing.id; // 🗂️ Mémorise
+    } else {
+      const newFolder: Folder = {
+        id: uuid(),
+        name: folderName,
+        parentFolderId: currentParentId,
+        userId: currentUser.idUser,
+        userIdAcces: [],
+      };
 
-      if (!hasExtension) {
-        toast.error(
-          "Veuillez ajouter uniquement des fichiers, pas des dossiers !"
-        );
-        setLoadingFile(false);
-        return;
-      }
+      await axios.post(`${API_BASE_URL}/folder`, newFolder);
+      setFolders((prev) => [...prev, newFolder]);
 
-      const folderPaths = new Set<string>();
+      currentParentId = newFolder.id;
+      folderCache[currentPath] = newFolder.id; // 🗂️ Mémorise
+    }
+  }
 
-      Array.from(files).forEach((file) => {
-        const relativePath = file.webkitRelativePath || file.name;
-        const parts = relativePath.split("/");
-        parts.pop(); // enlever le nom du fichier
+  return currentParentId;
+};
 
-        if (parts.length > 0) folderPaths.add(parts.join("/"));
-      });
+// 🔹 Upload des fichiers et création automatique des dossiers
+const handleUploadFile = async (files: FileList) => {
+  setLoadingFile(true);
 
-      const folderIdMap: Record<string, string> = {};
-      for (const path of folderPaths) {
-        const folderId = await ensureFolderPath(path, currentFolder.id || "/");
-        folderIdMap[path] = folderId;
-      }
-
-      for (const file of Array.from(files)) {
-        const relativePath = file.webkitRelativePath || file.name;
-        const parts = relativePath.split("/");
-        parts.pop();
-        const url = await uploadFile(file, "file/");
-
-        if (url) {
-          const infoFile: File = {
-            id: uuid(),
-            fileName: file.name,
-            originalName: file.name,
-            sizeFile: file.size,
-            typeFile: file.name.split(".").pop() || "unknown",
-            mimeType: file.type,
-            url,
-            folderId: currentFolder.id,
-            userId: currentUser.idUser,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            status: "active",
-          };
-          await axios.post(`${API_BASE_URL}/file`, infoFile);
-          toast.success(`Fichier ${file.name} uploadé avec succès !`);
-        }
-      }
-
-      getFiles(currentFolder, currentUser.idUser);
-    } catch (err) {
-      console.error(err);
-      toast.error("Erreur lors de l’upload des fichiers");
-    } finally {
+  try {
+    const allFiles = Array.from(files);
+    const hasFile = allFiles.some((file) => file.name.includes("."));
+    if (!hasFile) {
+      toast.error("Veuillez ajouter uniquement des fichiers, pas des dossiers vides !");
       setLoadingFile(false);
+      return;
     }
-  };
+
+    for (const file of allFiles) {
+      const relativePath = file.webkitRelativePath || file.name;
+      const parts = relativePath.split("/");
+      const fileName = parts.pop()!;
+      const folderPath = parts.join("/");
+
+      let folderId = currentFolder.id;
+
+      // ✅ Crée la hiérarchie complète et unique
+      if (folderPath) {
+        folderId = await ensureFolderPath(folderPath, currentFolder.id || "/");
+      }
+
+      // 🔹 Upload du fichier
+      const url = await uploadFile(file, "file/");
+      if (!url) continue;
+
+      const infoFile: File = {
+        id: uuid(),
+        fileName,
+        originalName: file.name,
+        sizeFile: file.size,
+        typeFile: file.name.split(".").pop() || "unknown",
+        mimeType: file.type,
+        url,
+        folderId,
+        userId: currentUser.idUser,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: "active",
+      };
+
+      await axios.post(`${API_BASE_URL}/file`, infoFile);
+      toast.success(`${file.name} ajouté avec succès !`);
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Erreur lors de l’import des fichiers !");
+  } finally {
+    await getFiles(currentFolder, currentUser.idUser);
+    setLoadingFile(false);
+  }
+};
+
 
   // Suppression fichier
   const removeFile = async (id: string, url: string): Promise<void> => {
@@ -188,9 +197,11 @@ const useFilesManager = () => {
         .remove([`file/${url.split("/").pop()}`]);
       await axios.delete(`${API_BASE_URL}/file/${id}`);
       toast.success("Fichier supprimé");
-      getFiles(currentFolder, currentUser.idUser);
     } catch (err) {
       toast.error("Erreur lors de la suppression");
+    } finally {
+      // Toujours recharger la liste après suppression
+      getFiles(currentFolder, currentUser.idUser);
     }
   };
 

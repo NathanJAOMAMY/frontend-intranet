@@ -48,7 +48,7 @@ const TopFile = () => {
         </div>
 
         {/* Search Field */}
-          <div className="w-[40%] relative text-gray-800">
+          {/* <div className="w-[40%] relative text-gray-800">
             <input
               type="text"
               placeholder="Rechercher ..."
@@ -56,8 +56,6 @@ const TopFile = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full p-2 pl-3 pr-10 border-2 border-primary bg-white rounded-lg text-sm outline-none focus:border-primary"
             />
-
-            {/* Animation de l'icône Close */}
             <AnimatePresence>
               {searchTerm && (
                 <motion.div
@@ -73,13 +71,11 @@ const TopFile = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Icône de recherche */}
             <FiSearch
               className="absolute right-3 top-1/2 -translate-y-1/2 text-primary"
               size={18}
             />
-          </div>
+          </div> */}
 
         {/* User & Notifications */}
         <div className="relative flex items-center gap-4">

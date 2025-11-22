@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiImage, FiPaperclip, FiVideo, FiEdit3, FiLink } from 'react-icons/fi';
 import { createPost} from '../../api/socialApi';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 // import { RootState } from '../../redux';
 // import { useAuth } from '../../context/AuthContext';
 
@@ -83,7 +84,7 @@ const NewsForm = ({ onNewPost, user, editMode = false, initialData = null, onUpd
     const hasFiles = images.length > 0 || files.length > 0 || video;
 
     if (!hasContent && !hasFiles) {
-      alert("Veuillez écrire un texte ou ajouter un média.");
+      toast.warn("Veuillez écrire un texte ou ajouter un média.");
       setIsSubmitting(false);
       return;
     }
@@ -122,7 +123,7 @@ const NewsForm = ({ onNewPost, user, editMode = false, initialData = null, onUpd
       setShowArticleEditor(false);
     } catch (error) {
       console.error("Erreur lors de la publication:", error);
-      alert(error.message || "Une erreur est survenue lors de la publication");
+      toast.error(error.message || "Une erreur est survenue lors de la publication");
     } finally {
       setIsSubmitting(false);
     }

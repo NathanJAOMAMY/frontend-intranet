@@ -8,7 +8,7 @@ import { supabase } from "../../supabase";
 import * as XLSX from "xlsx";
 import { API_BASE_URL } from "../../api";
 import WordViewer from "../../components/WordViewer";
-import { getFileIcon, getTypeFile } from "../../utils/fileHelpers";
+import { getFileIcon, getTypeFile } from "../../tools/fileHelpers";
 import ImageWithPlaceholder from "../../components/ImageWithPlaceholder";
 
 const SingleFile = () => {

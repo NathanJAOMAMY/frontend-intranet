@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
+import ModalDialoge from "./UI/ModalDialoge";
 
-export default function PostMenu({ onEdit, onDelete, isOwner }) {
+export default function PostMenu({ onEdit, post, isOwner, onDeleteSuccess }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef();
+  const [showModal, setShowModal] = useState(false);
+  const ref = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target)) 
+        setOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -17,8 +21,21 @@ export default function PostMenu({ onEdit, onDelete, isOwner }) {
       {open && (
         <div className="post-menu-dropdown" >
           <button onClick={() => { setOpen(false); onEdit(); }} >Modifier</button>
-          <button onClick={() => { setOpen(false); onDelete(); }} style={{color: "red"}}>Supprimer</button>
+          <button onClick={() => { setOpen(false); setShowModal(true); }} style={{color: "red"}}>Supprimer</button>
         </div>
+      )}
+      {showModal && (
+        <ModalDialoge
+         title="Supprimer la publication"
+          type="Post"
+          action="delete"
+          content={post}
+          onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            setShowModal(false);
+            if (onDeleteSuccess) onDeleteSuccess();
+          }}
+        />
       )}
     </div>
   );

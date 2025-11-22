@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { getFileIcon, getTypeFile } from "../../utils/fileHelpers";
+import { getFileIcon, getTypeFile } from "../../tools/fileHelpers";
 import { File } from "../../data/typeData";
 
 const renderPreview = (

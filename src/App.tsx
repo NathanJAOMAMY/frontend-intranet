@@ -14,9 +14,8 @@ import ShareMe from "./pages/file/ShareMe";
 import Login from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import SignCode from "./pages/file/SignCode";
-import Users from "./pages/file/Users";
-import SingleFile from "./pages/file/SingleFile";
+import SignCode from "./pages/Admin/SignCode";
+import Users from "./pages/Admin/Users";
 import ChatRoom from "./components/Chat/ChatRoom";
 import { ToastContainer } from "react-toastify";
 import { useEffect } from "react";
@@ -24,7 +23,9 @@ import { useDispatch } from "react-redux";
 import { fetchUser } from "./components/Chat/chatFonction";
 import { setUser } from "./redux/features/user/user";
 import FileComponant from "./pages/HomeFile"
-import { departmentRoutes, thematicRoutes } from "./routesConfig";
+import { departmentRoutes, thematicRoutes } from "./AppRouteConfig";
+import Admin from "./pages/Admin/Admin";
+import LeadingPage from "./pages/LeadingPage";
 
 const App = () => {
 
@@ -44,27 +45,21 @@ const App = () => {
       <HashRouter>
         <Routes>
           <Route path="/" element={<ProtectedRoute><GlobalLayout /></ProtectedRoute>}>
-            <Route element={<FileLayout />}>
-              {/* <Route index element={<HomeT />} /> */}
-              <Route index element={<FileComponant title="Bienvenu dans PromaCloud" path="/" />} />
-              {/* <Route index element={<Home />} /> */}
-              <Route path="file" element={<Files />} />
-              <Route path="file/:id/:folder" element={<SingleFile />} />
+
+            <Route index element={<LeadingPage />}></Route>
+            {/* <Route path="/" element={<FileLayout />}>
+            </Route> */}
+            <Route path="/file/*" element={<FileLayout />}>
+              {/* <Route path="file" element={<Files />} /> */}
               <Route path="image" element={<Images />} />
               <Route path="share" element={<Share title="Mes fichiers et dossiers partagés" />} />
               <Route path="share-with-me" element={<ShareMe title="Fichiers et dossiers partagés avec moi" />} />
-              <Route path="sign-code" element={<SignCode />} />
-              <Route path="users" element={<Users />} />
-
-              {/* Administration */}
-              <Route path="sign-code" element={<SignCode />} />
-              <Route path="users" element={<Users />} />
-
+              <Route path="file" element={<FileComponant title="Bienvenu dans PmbCloud" path="/" />} />
               {/* Sous-menus Département */}
               {departmentRoutes.map(({ path, title }) => (
                 <Route
                   key={path}
-                  path={path}
+                  path={path.slice(1)}
                   element={<FileComponant title={title} path={path} departement departementRoutes={path} />}
                 />
               ))}
@@ -80,6 +75,11 @@ const App = () => {
             </Route>
             <Route path="/chat/*" element={<Chat />}>
               <Route path=":conversationId" element={<ChatRoom />} />
+            </Route>
+            <Route path="/admin/*" element={<Admin />}>
+              {/* Administration */}
+              <Route path="sign-code" element={<SignCode />} />
+              <Route path="users" element={<Users />} />
             </Route>
             <Route path="/social-media" element={<SocialMedia />} />
           </Route>

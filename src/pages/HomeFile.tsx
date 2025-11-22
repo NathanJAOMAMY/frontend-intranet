@@ -4,7 +4,7 @@ import useFilesManager from "../hooks/useFilesManager";
 import FileGrid from "../components/Files/FileGrid";
 import FileViewer from "../components/Files/FileViewer";
 import Uploader, { UploaderRef } from "../components/Files/Uploader";
-import { Pannel } from "../components/Ts/Utils";
+import { Pannel } from "../components/Utils";
 import ImageModal from "../components/Files/modals/ImageModal";
 import { File, Folder } from "../data/typeData";
 import FolderGrid from "../components/Files/FolderGrid";
@@ -46,21 +46,19 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareTarget, setShareTarget] = useState<any>(null);
   const [shareDeptModalOpen, setShareDeptModalOpen] = useState(false);
-  const [showModalDialoge, setShowModalDialoge] = useState<boolean>(false);
-  const [containeModalDialoge, setContaineModalDialoge] = useState<File | Folder>();
   const [shareDeptTarget, setShareDeptTarget] = useState<any>(null);
   const isDepartement = departement === true;
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "File" | "Folder"; item: any } | null>(null);
 
   const {
     files,
     folders,
     currentFolder,
     isDownloading,
+    loadingFile,
     createFolder,
     getFiles,
     handleUploadFile,
-    removeFile,
-    removeFolder,
     downloadFolder,
     setCurrentFolder,
     getFolders,
@@ -167,7 +165,6 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
     const fetchData = async () => {
       if (!currentUser?.idUser) return;
       setLoadingData(true);
-
       try {
         await Promise.all([
           getFiles({ ...folderVoid, id: path }, currentUser.idUser, isDepartement, departementRoutes),
@@ -316,7 +313,7 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
       />
       <div className="flex flex-col relative w-full overflow-auto h-[67vh]">
         {/* Fichiers et dossiers */}
-        {loadingData ? (<>
+        {loadingData || loadingFile ? (<>
           <div className="flex items-center justify-center w-full h-full absolute inset-0 z-50">
             <FiLoader className="animate-spin text-primary absolute" size={40} />
           </div></>) : currentFolder.id === "/" ? (
@@ -334,7 +331,11 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
                     setNavigateFolder((prev) => [...prev, folder]);
                   }}
                   onDownload={downloadFolder}
-                  onRemove={removeFolder}
+                  onRemove={(id) => {
+                    const folder = folders.find(f => f.id === id);
+                    if (folder) setDeleteTarget({ type: "Folder", item: folder });
+                    else toast.error("Dossier introuvable");
+                  }}
                   onRename={openRenameModal}
                   onShare={openShareModal}
                   onShareDepartement={openShareDeptModal}
@@ -351,7 +352,11 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
                     setIsImageOpen(true);
                     // setCurrentFile()
                   }}
-                  onDelete={removeFile}
+                  onDelete={(id, url) => {
+                    const file = files.find(f => f.id === id && f.url === url);
+                    if (file) setDeleteTarget({ type: "File", item: file });
+                    else toast.error("Fichier introuvable");
+                  }}
                   onDownload={downloadFile}
                   onRename={openRenameModal}
                   onShare={openShareModal}
@@ -375,8 +380,11 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
                 setNavigateFolder((prev) => [...prev, folder]);
               }}
               onDownload={downloadFolder}
-              onRemove={removeFolder}
-              // onRemove={()=>{setShowModalDialoge(true) , setContaineModalDialoge(folders)} }
+              onRemove={(id) => {
+                const folder = folders.find(f => f.id === id);
+                if (folder) setDeleteTarget({ type: "Folder", item: folder });
+                else toast.error("Dossier introuvable");
+              }}
               onRename={openRenameModal}
               onShare={openShareModal}
               onShareDepartement={openShareDeptModal}
@@ -389,7 +397,11 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
                 setImageUrl(url);
                 setIsImageOpen(true);
               }}
-              onDelete={removeFile}
+              onDelete={(id, url) => {
+                const file = files.find(f => f.id === id && f.url === url);
+                if (file) setDeleteTarget({ type: "File", item: file });
+                else toast.error("Fichier introuvable");
+              }}
               onDownload={downloadFile}
               onRename={openRenameModal}
               onShare={openShareModal}
@@ -419,10 +431,7 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
         onClose={closeShareDeptModal}
         onShareConfirm={handleShareDeptConfirm}
       />
-      {showModalDialoge && containeModalDialoge &&
-        <ModalDialoge action="delete" content={containeModalDialoge}
-          onClose={() => setShowModalDialoge(false)}
-          title="Suppression" type="File" />}
+
       {/* Viewer */}
       {isViewerOpen && selectedFile && (
         <FileViewer file={selectedFile} onClose={() => setIsViewerOpen(false)} />
@@ -434,6 +443,21 @@ const Home: FC<HomeProps> = ({ title, path, departement, departementRoutes }) =>
             <FiLoader className="animate-spin text-primary absolute" size={40} />
           </div>)
       }
+      {deleteTarget && (
+        <ModalDialoge
+          title="Confirmer la suppression"
+          type={deleteTarget.type}
+          action="delete"
+          content={deleteTarget.item}
+          onClose={() => setDeleteTarget(null)}
+          onSuccess={() => {
+            setDeleteTarget(null);
+            // Recharge la liste après suppression
+            getFiles(currentFolder, currentUser.idUser, isDepartement, departementRoutes);
+            getFolders(currentFolder.id, currentUser.idUser, isDepartement, departementRoutes);
+          }}
+        />
+      )}
     </div>
   );
 };

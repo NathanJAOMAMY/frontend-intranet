@@ -12,10 +12,10 @@ import { useSelector } from 'react-redux';
 import NewsForm from './NewsForm';
 import { createPost, fetchPosts, addReaction, addComment, addCommentReaction, replyToComment, addReplyReaction } from '../../api/socialApi';
 // import { createPost, fetchPosts } from '../../api/socialApi';
-import axios from 'axios';
 import { API_BASE_URL } from '../../api';
 import PostMenu from '../../components/PostMenu';
 import { updatePost } from '../../api/socialApi'; 
+import { toast } from 'react-toastify';
 
 
 const reactions = [
@@ -128,18 +128,7 @@ const handleNewPost = async (postData) => {
   }
 };
 
-const handleDeletePost = async (postId) => {
-  if (!window.confirm("Supprimer cette publication ?")) return;
-  try {
-    await axios.delete(`${API_BASE_URL}/social/posts/${postId}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    setPosts(posts => posts.filter(p => p._id !== postId));
-  } catch (err) {
-    setError(err.message);
-    console.error("Erreur lors de la suppression:", err);
-  }
-};
+
 
 const handleUpdatePost = async (postData, postId) => {
   try {
@@ -289,7 +278,7 @@ const handleUpdatePost = async (postData, postId) => {
       }));
     } catch (err) {
       console.log(err)
-      alert("Erreur lors de la réaction");
+      toast.error("Erreur lors de la réaction");
     }
   };
 
@@ -311,7 +300,7 @@ const handleUpdatePost = async (postData, postId) => {
       setCommentInputs(prev => ({ ...prev, [postId]: '' }));
     } catch (err) {
       console.log(err)
-      alert("Erreur lors de l'ajout du commentaire");
+      toast.error("Erreur lors de l'ajout du commentaire");
     }
   };
 
@@ -322,7 +311,7 @@ const handleUpdatePost = async (postData, postId) => {
       const data = await fetchPosts();
       setPosts(data);
     } catch (err) {
-      alert("Erreur lors de la réaction au commentaire", err);
+      toast.error("Erreur lors de la réaction au commentaire", err);
     }
   };
 
@@ -337,7 +326,7 @@ const handleUpdatePost = async (postData, postId) => {
       setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
       setShowReplyInput(prev => ({ ...prev, [commentId]: false }));
     } catch (err) {
-      alert("Erreur lors de la réponse au commentaire", err);
+      toast.error("Erreur lors de la réponse au commentaire", err);
     }
   };
 
@@ -348,7 +337,7 @@ const handleUpdatePost = async (postData, postId) => {
       const data = await fetchPosts();
       setPosts(data);
     } catch (err) {
-      alert("Erreur lors de la réaction à la réponse", err);
+      toast.error("Erreur lors de la réaction à la réponse", err);
     }
   };
 
@@ -616,8 +605,21 @@ const handleUpdatePost = async (postData, postId) => {
                 <div className="post-menu" >
                   <PostMenu
                     onEdit={() => handleEditPost(post)}
-                    onDelete={() => handleDeletePost(post._id)}
                     isOwner={currentUser.idUser === post.idUser}
+                    post={post}
+                    onDeleteSuccess={async () => {
+                      // Recharge les posts après suppression
+                      try {
+                        setLoading(true);
+                        const data = await fetchPosts();
+                        setPosts(data);
+                        setError(null);
+                      } catch (err) {
+                        setError(err.message);
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
                   />
                 </div>
               </div>

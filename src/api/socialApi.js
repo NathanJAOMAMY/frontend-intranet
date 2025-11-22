@@ -3,6 +3,7 @@ import { API_BASE_URL } from '../api'; // Assurez-vous que le chemin est correct
 // const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 import { uploadFile } from '../tools/tools'
+import { toast } from 'react-toastify';
 
 export const fetchPosts = async () => {
   try {
@@ -13,7 +14,10 @@ export const fetchPosts = async () => {
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || 'Erreur lors du chargement des posts');
+    const message = error.response?.data?.error || 'Erreur lors du chargement des posts';
+    toast.error(message);
+    console.error('Erreur API (fetchPosts) :', error);
+    throw new Error(message);
   }
 };
 
@@ -53,9 +57,14 @@ export const createPost = async (postData) => {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
+    toast.success("Post créé avec succès !");
     return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Erreur lors de la création du post');
+  } 
+  catch (error) {
+  const message = error.response?.data?.error || 'Erreur lors de la création du post';
+  toast.error(message);
+  console.error('Erreur API (createPost) :', error);
+  throw new Error(message);
   }
 };
 
@@ -161,8 +170,12 @@ export const updatePost = async (postId, postData) => {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
+    toast.success("Post modifié avec succès !");
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || 'Erreur lors de la modification du post');
+    const message = error.response?.data?.error || 'Erreur lors de la modification du post';
+    toast.error(message);
+    console.error('Erreur API (updatePost) :', error);
+    throw new Error(message);
   }
 };

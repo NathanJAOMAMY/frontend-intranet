@@ -1,3 +1,19 @@
+export type UserRole =
+  | "admin"
+  | "Production"
+  | "Quality"
+  | "Health-Safety"
+  | "Human Resources"
+  | "Maintenance"
+  | "Management"
+  | "Security"
+  | "Logistics"
+  | "Certification"
+  | "comptability"
+  | "improvement"
+  | "nurse"
+  | "Other";
+
 export type User = {
   idUser: string;
   userName: string;
@@ -6,7 +22,7 @@ export type User = {
   pseudo: string;
   password: string;
   statusUser: boolean;
-  roleUser: "admin" | "user";
+  roleUser: UserRole[];
   responsibilities?: string[]; // Optional responsibilities
   createdAt?: string;
   updatedAt?: string;
@@ -42,9 +58,9 @@ export type ChatMessage = {
 // types.ts
 
 export interface Folder {
-  id: string;               // ancien id_folder
-  name: string;             // ancien libelle_folder
-  parentFolderId: string ;
+  id: string; // ancien id_folder
+  name: string; // ancien libelle_folder
+  parentFolderId: string;
   userId: string;
   userIdAcces?: string[];
   createdAt?: string;
@@ -52,14 +68,14 @@ export interface Folder {
 }
 
 export interface File {
-  id: string;               // ancien id_file
-  fileName: string;         // nouveau nom pour libelle_file
-  originalName: string;     // nom d’origine
-  sizeFile: number;         // en bytes ?? a revoire 
-  typeFile: string;         // ex: "pdf", "jpg"
-  mimeType?: string;        // ex: "application/pdf"
+  id: string; // ancien id_file
+  fileName: string; // nouveau nom pour libelle_file
+  originalName: string; // nom d’origine
+  sizeFile: number; // en bytes ?? a revoire
+  typeFile: string; // ex: "pdf", "jpg"
+  mimeType?: string; // ex: "application/pdf"
   url: string;
-  readCount?: number;       // ancien readed
+  readCount?: number; // ancien readed
   status?: "active" | "archived" | "deleted"; // ancien status_file
   folderId?: string | null; // ancien folder_id
   userId: string;
@@ -78,4 +94,20 @@ export enum PATH_FILE {
   SECURITE = "/security",
   LOGISTIQUE = "/logistique",
   CERTIFICATION = "/certification",
+  OTHER = "/other",
+  COMPTABILITY = "/comptability",
+  IMPROVENENT = "/improvement",
+  NURSE = "/nurse",
 }
+export const allDepartments = [
+  "/production",
+  "/quality",
+  "/health-security",
+  "/rh",
+  "/maintenance",
+  "/direction",
+  "/security",
+  "/logistique",
+  "/certification",
+  "/other",
+];

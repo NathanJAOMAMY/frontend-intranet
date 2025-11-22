@@ -1,16 +1,21 @@
-import React from 'react';
+import { FC } from 'react';
 import { useSelector } from 'react-redux';
 import { findeUser } from '../tools/tools';
+import { User } from '../data/typeData';
+import { RootState } from '../redux';
+interface UserProfileProps {
+  user: User | null;
+}
 
-const UserProfile = ({ user }) => {
-  const allUsers = useSelector(state => state.user.users) || [];
+const UserProfile: FC<UserProfileProps> = ({ user }) => {
+  const allUsers = useSelector((state: RootState) => state.user.users);
   if (!user) return <div className="user-profile-card">Profil non disponible</div>;
 
   return (
     <div className="user-profile-card">
       <div className="user-profile-avatar">
 
-        {findeUser(user.idUser , allUsers) ? (
+        {findeUser(user.idUser, allUsers) ? (
           <img
             src={user.avatar}
             alt="avatar"

@@ -9,4 +9,9 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+   preview: {
+    host: true,                      
+    allowedHosts: ['intranet.promabio.com'], 
+    port: 4173                       
+  }
 })

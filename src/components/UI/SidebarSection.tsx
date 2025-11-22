@@ -1,9 +1,7 @@
-import React, { FC, useState } from "react";
-import { Icon } from "@iconify/react";
+import { useState } from "react";
+import { NavItem } from "../MenuItem";
+import { Icon } from "@iconify/react/dist/iconify.js";
 import { NavLink } from "react-router-dom";
-import { navItems, fileItems, adminItems, NavItem } from "./fileMenuItem";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux";
 
 const SidebarSection = ({ title, items }: { title?: string; items: NavItem[] }) => {
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
@@ -71,20 +69,4 @@ const SidebarSection = ({ title, items }: { title?: string; items: NavItem[] }) 
   );
 };
 
-const Sidebar: FC = () => {
-  const userInfo = useSelector((state: RootState) => state.user.currentUser);
-  const isAdmin = userInfo.roleUser === "admin";
-  return (
-    <aside className="h-full w-[250px] overflow-y-auto p-2">
-      {/* <div className="p-4 font-bold text-xl text-gray-800">{title}</div> */}
-      <nav className="flex flex-col gap-4">
-        <SidebarSection items={navItems} />
-        <SidebarSection title="Fichiers" items={fileItems} />
-        {isAdmin && <SidebarSection title="Administration" items={adminItems} />}
-
-      </nav>
-    </aside>
-  );
-};
-
-export default Sidebar;
+export default SidebarSection;

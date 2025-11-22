@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Icon } from "@iconify/react";
 import { File } from "../../data/typeData";
-import { getTypeFile } from "../../utils/fileHelpers";
+import { getTypeFile } from "../../tools/fileHelpers";
 
 export interface FileViewerProps {
   file: File | null;

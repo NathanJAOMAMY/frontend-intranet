@@ -3,7 +3,7 @@ import { useEffect, useState, FormEvent } from "react";
 import bg from "../assets/images/bg-login.jpeg";
 //@ts-expect-error
 import logo from "../assets/images/logo - pmbcloud.png";
-import { Button, Modal } from "../components/Ts/Utils";
+import { Button, Modal } from "../components/Utils";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +13,7 @@ import { API_BASE_URL } from "../api";
 import { toast } from "react-toastify";
 import { User } from "../data/typeData";
 import { FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
+import { onGetByIdService } from "../components/Admin/serviceUsers";
 
 interface LoginResponse {
   token: string;
@@ -25,7 +26,7 @@ const Login = () => {
   const [password, setPassword] = useState<string>("");
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [show, setShow] = useState<boolean>(false);
-  const [isLoading ,setIsLoading] = useState<boolean>(false); // 🔹 false par défaut
+  const [isLoading, setIsLoading] = useState<boolean>(false); // 🔹 false par défaut
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -41,28 +42,25 @@ const Login = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const localUser = localStorage.getItem("userInfo");
-      if (!localUser) return;
-
-      try {
-        const parsedUser = JSON.parse(localUser);
-        const { data } = await axios.get(`/api/users/${parsedUser._id}`);
-        if (!data) {
-          localStorage.removeItem("userInfo");
-          navigate("/login");
+      if (localStoreUser) {
+        try {
+          const parsedUser = JSON.parse(localStoreUser) as User;
+          const getCurrentUser = await onGetByIdService<User>('users', parsedUser.idUser);
+          if (!getCurrentUser) {
+            localStorage.removeItem("userInfo");
+            navigate("/login");
+          }
+        } catch (err) {
+          console.log(err);
         }
-      } catch {
-        localStorage.removeItem("userInfo");
-        navigate("/login");
       }
     };
-
     checkUser();
   }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setIsLoading(true); // 🔹 activer le loading
+    setIsLoading(true);
     loginClient(username, password);
   };
 
@@ -78,7 +76,7 @@ const Login = () => {
     try {
       const { data } = await axios.post<LoginResponse>(
         `${API_BASE_URL}/auth/login`,
-        { userName, password },
+        { identifiant: userName, password },
         { withCredentials: true }
       );
       localStorage.setItem("token", data.token);
@@ -115,7 +113,7 @@ const Login = () => {
       return false;
     }
     finally {
-      setIsLoading(false); // 🔹 désactiver le loading
+      setIsLoading(false);
     }
   };
 
@@ -154,7 +152,7 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <div>
             <label htmlFor="username" className="block font-semibold text-gray-700 mb-1">
-              Identifiant
+              Nom ou email
             </label>
             <input
               id="username"
@@ -197,10 +195,10 @@ const Login = () => {
               type="success"
             />
 
-            <div className="flex items-center justify-center">
+            {/* <div className="flex items-center justify-center">
               <span className="text-gray-800">Pas de compte ?</span>
               <Button title="S'inscrire" handleSubmit={openModal} type="secondary" />
-            </div>
+            </div> */}
           </div>
         </form>
 

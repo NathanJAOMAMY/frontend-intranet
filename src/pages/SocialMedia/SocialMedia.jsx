@@ -6,7 +6,7 @@ import NewsForm from './NewsForm';
 import NewsFeed from './NewsFeed';
 import UserProfile from '../../components/UserProfile';
 import logo from '../../assets/images/logo - pmbcloud.png';
-import { fetchPosts } from '../../api/socialApi'; // Nouveau fichier d'API
+import { fetchPosts } from '../../api/socialApi';
 
 const SocialMedia = () => {
   const userInfo = useSelector(state => state.user.currentUser); // profil connecté

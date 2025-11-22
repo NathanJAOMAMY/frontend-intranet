@@ -6,85 +6,17 @@ interface UserState {
   currentUser: User;
 }
 const initialState: UserState = {
-  users: [
-    // {
-    //   idUser: "1",
-    //   userName: "John",
-    //   surname: "Doe",
-    //   pseudo: "johndoe",
-    //   // isOnlinne: true,
-    //   role: "admin",
-    //   password: "password123",
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    //   statusUser: false,
-    //   // avatar: "https://example.com/avatar1.jpg",
-    // },
-    // {
-    //   idUser: "2",
-    //   userName: "Jane",
-    //   surname: "Smith",
-    //   pseudo: "janesmith",
-    //   // isOnlinne: false,
-    //   role: "user",
-    //   password: "mypassword",
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    //   statusUser: false,
-    //   // avatar: "https://example.com/avatar1.jpg",
-    // },
-    // {
-    //   idUser: "3",
-    //   userName: "Alice",
-    //   surname: "Johnson",
-    //   pseudo: "alicejohnson",
-    //   // isOnlinne: true,
-    //   role: "user",
-    //   password: "alicepassword",
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    //   statusUser: false,
-    //   // avatar: "https://example.com/avatar1.jpg",
-    // },
-    // {
-    //   idUser: "4",
-    //   userName: "Bob",
-    //   surname: "Brown",
-    //   pseudo: "bobbrown",
-    //   // isOnlinne: false,
-    //   role: "user",
-    //   password: "bobpassword",
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    //   statusUser: false,
-    //   // avatar: "https://example.com/avatar1.jpg",
-    // },
-    // {
-    //   idUser: "5",
-    //   userName: "Charlie",
-    //   surname: "Davis",
-    //   pseudo: "charliedavis",
-    //   // isOnlinne: true,
-    //   role: "user",
-    //   password: "charliepassword",
-    //   createdAt: new Date().toISOString(),
-    //   updatedAt: new Date().toISOString(),
-    //   statusUser: false,
-    //   // avatar: "https://example.com/avatar1.jpg",
-    // },
-  ],
+  users: [],
   currentUser: {
     idUser: "1",
     userName: "John",
     surname: "Doe",
     pseudo: "johndoe",
-    // isOnlinne: true,
-    roleUser: "admin",
+    roleUser: ["admin"],
     password: "password123",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     statusUser: false,
-    // avatar: "https://example.com/avatar1.jpg",
     email: "",
     responsibilities: [], // Optional responsibilities
     avatar: "", // Optional avatar URL
@@ -100,8 +32,23 @@ const userSlice = createSlice({
     setUser(state, action: PayloadAction<User[]>) {
       state.users = action.payload;
     },
+    addUserLocal(state, action: PayloadAction<User>) {
+      const existingUser = state.users.findIndex(
+        (u) => u.idUser === action.payload.idUser
+      );
+      if (existingUser !== -1) {
+        state.users[existingUser] = action.payload;
+      } else {
+        state.users.push(action.payload);
+      }
+    },
+    deletUser(state, action: PayloadAction<User>) {
+      state.users = state.users.filter(
+        (u) => u.idUser !== action.payload.idUser
+      );
+    },
   },
 });
 
-export const { setCurrentUser, setUser } = userSlice.actions;
+export const { setCurrentUser, setUser, addUserLocal,deletUser } = userSlice.actions;
 export default userSlice.reducer;

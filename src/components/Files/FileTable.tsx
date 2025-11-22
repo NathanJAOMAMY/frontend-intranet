@@ -68,6 +68,9 @@ const FileTable: React.FC<FileTableProps> = ({
                     fileName={file.fileName}
                     on="table"
                     onRename={() => onRename(file.id, "file", file.fileName)}
+                    context="home"
+                    onShare={()=>{}}
+                    onShareDepartement={()=>{}}
                   />
                 </td>
               </tr>

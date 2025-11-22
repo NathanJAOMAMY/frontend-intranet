@@ -1,7 +1,7 @@
 {
   "name": "intranet",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "main.cjs",
   "build": {
@@ -30,10 +30,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "electron .",
+    "start": "tsc -b && vite build && vite preview --host",
     "pack": "electron-builder --dir",
     "desktop": "electron-builder"
   },
@@ -43,11 +43,13 @@
     "@supabase/supabase-js": "^2.53.0",
     "@tailwindcss/vite": "^4.0.14",
     "axios": "^1.8.4",
+    "bcrypt": "^6.0.0",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "express": "^5.1.0",
     "framer-motion": "^12.23.12",
     "js-file-download": "^0.4.12",
+    "lucide-react": "^0.548.0",
     "mammoth": "^1.9.1",
     "multer": "^2.0.0",
     "pdfjs-dist": "^5.4.149",
